@@ -26,10 +26,12 @@ instance Pretty CFile where
 
 -- Function definitions are both declarations and expressions.
 
-data CDeclaration = CFuncDecl CVar [CVar] [CExpr]
+data CDeclaration = CInclude Name
+                  | CFuncDecl CVar [CVar] [CExpr]
                   deriving (Eq, Show)
 
 instance Pretty CDeclaration where
+    pretty (CInclude name) = "#include " ++ name 
     pretty (CFuncDecl (CVar t n) args body) =
       pretty t ++ " " ++ n ++ "(" ++ unlist (map pretty args) ++ ") {\n" ++
       intercalate ";\n" (map pretty body) ++ ";\n}"
@@ -54,11 +56,13 @@ instance Pretty CType where
 
 data CExpr = CCall Name [CExpr]
            | CAtom CLiteral
+           | CReturn CExpr
            deriving (Eq, Show)
 
 instance Pretty CExpr where
     pretty (CCall n args) = n ++ "(" ++ unlist (map pretty args) ++ ")"
     pretty (CAtom lit)    = pretty lit
+    pretty (CReturn val)  = "return " ++ pretty val
 
 data CLiteral = CLitReal Double
               | CLitStr String
